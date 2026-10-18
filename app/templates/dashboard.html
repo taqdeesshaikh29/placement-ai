@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container">
+    <h1 class="fw-bold">Welcome, {{ current_user.name.split()[0] }} 👋</h1>
+    <p class="text-muted mb-4">
+      {% if stats.quiz_count %}Here's how your preparation is going.{% else %}Your dashboard will fill up as you practise.{% endif %}
+    </p>
+
+    <div class="row g-4 mb-4">
+      <div class="col-sm-6 col-lg-3">
+        <div class="card feature-card h-100"><div class="card-body p-4">
+          <div class="stat-label">Questions attempted</div>
+          <div class="stat-value">{{ stats.attempted }}</div>
+        </div></div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card feature-card h-100"><div class="card-body p-4">
+          <div class="stat-label">Accuracy</div>
+          <div class="stat-value">{% if stats.attempted %}{{ stats.accuracy }}%{% else %}–{% endif %}</div>
+        </div></div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card feature-card h-100"><div class="card-body p-4">
+          <div class="stat-label">Quizzes completed</div>
+          <div class="stat-value">{{ stats.quiz_count }}</div>
+        </div></div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card next-card h-100"><div class="card-body p-4">
+          <div class="stat-label">Recommended next</div>
+          <div class="fw-semibold fs-5 mb-1">{{ stats.recommendation.title }}</div>
+          <div class="small mb-3">{{ stats.recommendation.text }}</div>
+          <a href="{{ url_for(stats.recommendation.endpoint) }}" class="btn btn-light btn-sm fw-semibold">Start practising</a>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="card feature-card h-100"><div class="card-body p-4">
+          <h5 class="fw-semibold mb-3">Subject-wise performance</h5>
+          {% if stats.subjects %}
+          <div class="chart-wrap">
+            <canvas id="subjectChart" data-subjects='{{ stats.subjects|tojson|forceescape }}'></canvas>
+          </div>
+          {% else %}
+          <p class="text-muted mb-0">No data yet. Your accuracy per subject will appear here after your first quiz.</p>
+          {% endif %}
+        </div></div>
+      </div>
+      <div class="col-lg-5">
+        <div class="card feature-card h-100"><div class="card-body p-4">
+          <h5 class="fw-semibold mb-3">Recent quiz results</h5>
+          {% if stats.recent %}
+          <ul class="list-group list-group-flush">
+            {% for r in stats.recent %}
+            <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-medium">{{ r.subject }}</div>
+                <small class="text-muted">{{ r.created_at.strftime('%d %b %Y') }}</small>
+              </div>
+              <div class="text-end">
+                <div class="fw-semibold">{{ r.correct_answers }}/{{ r.total_questions }}</div>
+                <small class="text-muted">{{ r.accuracy }}%</small>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p class="text-muted mb-0">You haven't completed any quizzes yet.</p>
+          {% endif %}
+        </div></div>
+      </div>
+    </div>
+
+    <div class="row g-4 mt-0">
+      <div class="col-12">
+        <div class="card feature-card"><div class="card-body p-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+              <h5 class="fw-semibold mb-1">Python practice</h5>
+              {% if stats.python.attempts %}
+              <span class="text-muted">{{ stats.python.solved }}/{{ stats.python.total }} questions solved ·
+                {{ stats.python.points }}/{{ stats.python.max_points }} points ·
+                {{ stats.python.attempts }} answer{{ '' if stats.python.attempts == 1 else 's' }} submitted</span>
+              {% else %}
+              <span class="text-muted">You haven't tried any Python questions yet.</span>
+              {% endif %}
+            </div>
+            <a href="{{ url_for('python_lab.index') }}" class="btn btn-primary-custom">{{ 'Continue practising' if stats.python.attempts else 'Start Python practice' }}</a>
+          </div>
+          {% if stats.python.attempts %}
+          <div class="progress mt-3" style="height: 6px;"><div class="progress-bar" style="width: {{ (100 * stats.python.solved / stats.python.total)|round|int }}%"></div></div>
+          {% endif %}
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if stats.subjects %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endif %}
+{% endblock %}

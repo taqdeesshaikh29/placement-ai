@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Python Practice – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container">
+    <h1 class="fw-bold">Python Practice</h1>
+    <p class="text-muted mb-4">Beginner questions on core Python. Answer by reading code, filling blanks or choosing an option. Nothing you type is executed.</p>
+
+    <div class="row g-4 mb-4">
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Questions solved</div>
+        <div class="stat-value">{{ progress.solved }}/{{ progress.total }}</div>
+      </div></div></div>
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Points</div>
+        <div class="stat-value">{{ progress.points }}</div>
+        <small class="text-muted">of {{ progress.max_points }} (Easy 10 · Medium 20 · Hard 30)</small>
+      </div></div></div>
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Answers submitted</div>
+        <div class="stat-value">{{ progress.attempts }}</div>
+      </div></div></div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      <a href="{{ url_for('python_lab.index') }}" class="btn btn-sm {{ 'btn-primary-custom' if not level else 'btn-outline-primary-custom' }}">All levels</a>
+      {% for d in difficulties %}
+      <a href="{{ url_for('python_lab.index', level=d) }}" class="btn btn-sm {{ 'btn-primary-custom' if level == d else 'btn-outline-primary-custom' }}">{{ d }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="row g-4">
+      {% for topic, questions in grouped %}{% if questions %}
+      <div class="col-md-6">
+        <div class="card feature-card h-100"><div class="card-body p-4">
+          <h5 class="fw-semibold mb-2">{{ topic }}</h5>
+          {% for q in questions %}
+          <a class="q-row" href="{{ url_for('python_lab.question', qid=q.id) }}">
+            <span>{{ q.title }} <span class="badge diff-{{ q.difficulty }} ms-1">{{ q.difficulty }}</span></span>
+            {% if q.id in progress.solved_ids %}<span class="badge bg-success">Solved</span>
+            {% else %}<i class="bi bi-chevron-right text-muted"></i>{% endif %}
+          </a>
+          {% endfor %}
+        </div></div>
+      </div>
+      {% endif %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

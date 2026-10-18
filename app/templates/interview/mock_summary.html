@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Interview Summary – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <a href="{{ url_for('interview.mock_index') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> AI Mock Interview</a>
+    <h1 class="fw-bold mt-2">{{ ms.topic }} · {{ ms.difficulty }}</h1>
+    <p class="text-muted">{{ items|length }} of {{ total }} questions answered.</p>
+
+    {% if averages %}
+    <div class="card feature-card mb-4"><div class="card-body p-4">
+      <div class="fw-semibold mb-2">Average AI scores <span class="small text-muted fw-normal">({{ scored_count }} AI-assessed answer{{ '' if scored_count == 1 else 's' }})</span></div>
+      <div class="row g-2">
+        {% for m, v in averages.items() %}<div class="col-md-4"><div class="small text-muted text-capitalize">{{ m }}</div><div class="h4 fw-bold mb-0">{{ v }}<span class="small text-muted">/10</span></div></div>{% endfor %}
+      </div>
+    </div></div>
+    {% elif items %}
+    <div class="alert alert-warning small">No answers in this interview were assessed by AI, so there are no scores. Feedback below came from fallback mode (not AI).</div>
+    {% endif %}
+
+    {% for a, fb in items %}
+    <div class="card feature-card mb-3"><div class="card-body p-4">
+      <div class="small text-muted">Question {{ a.position + 1 }}</div>
+      <h2 class="h6 fw-bold">{{ a.question.text }}</h2>
+      <details><summary class="small">Your answer, feedback and sample answer</summary>
+        <p class="mt-3" style="white-space: pre-wrap;">{{ a.answer_text }}</p><hr>
+        {% set reason_text = {'no_key': 'No AI service is configured on this server.', 'limit': 'Your daily AI feedback limit has been reached.'}.get(a.fallback_reason, a.fallback_reason) %}
+        {% include "interview/_mock_feedback.html" %}
+      </details>
+    </div></div>
+    {% endfor %}
+    <a href="{{ url_for('interview.mock_index') }}" class="btn btn-primary-custom">Start another interview</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Mock Interview – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <a href="{{ url_for('interview.mock_index') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> AI Mock Interview</a>
+    <p class="small text-muted mt-2 mb-1">Question {{ position + 1 }} of {{ total }}
+      · {% if ms.mode == 'ai' %}AI feedback{% else %}Fallback mode (no AI){% endif %}</p>
+    <div class="card feature-card mb-3"><div class="card-body p-4">
+      <div class="mb-2"><span class="badge topic-badge">{{ q.category }}</span> <span class="badge diff-{{ q.difficulty }}">{{ q.difficulty }}</span></div>
+      <h2 class="h4 fw-bold mb-0">{{ q.text }}</h2>
+    </div></div>
+    <form method="post" action="{{ url_for('interview.mock_answer', session_id=ms.id) }}" class="card feature-card" id="mockForm"><div class="card-body p-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="form-label fw-medium" for="response">Your answer</label>
+      <textarea class="form-control{{ ' is-invalid' if error }}" id="response" name="response" rows="8" maxlength="{{ max_len }}"
+                placeholder="Answer as you would in a real interview..." required>{{ text }}</textarea>
+      {% if error %}<div class="invalid-feedback">{{ error }}</div>{% endif %}
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+        <small class="text-muted"><span id="charCount">{{ text|length }}</span>/{{ max_len }} characters</small>
+        <button type="submit" class="btn btn-primary-custom" id="submitBtn">Submit answer</button>
+      </div>
+    </div></form>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+  const box = document.getElementById("response"), count = document.getElementById("charCount");
+  box.addEventListener("input", () => { count.textContent = box.value.length; });
+  const form = document.getElementById("mockForm");
+  form.addEventListener("submit", (e) => {
+    if (form.dataset.busy) { e.preventDefault(); return; }
+    form.dataset.busy = "1";
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true; btn.textContent = "Getting feedback…";
+  });
+</script>
+{% endblock %}

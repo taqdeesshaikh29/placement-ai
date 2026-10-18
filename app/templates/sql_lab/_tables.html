@@ -1,0 +1,18 @@
+<h5 class="fw-semibold mb-3">Sample tables</h5>
+{% for t in tables %}
+<div class="mb-4 schema-table">
+  <div class="fw-semibold">{{ t.name }} <small class="text-muted fw-normal">({{ t.total }} rows)</small></div>
+  <div class="small text-muted mb-1">
+    {% for c in t.columns %}<code>{{ c.name }}</code> {{ c.type|lower }}{% if c.pk %} (key){% endif %}{{ ", " if not loop.last }}{% endfor %}
+  </div>
+  <div class="sql-results" style="max-height: 200px;">
+    <table class="table table-sm table-striped">
+      <thead><tr>{% for c in t.columns %}<th>{{ c.name }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for row in t.rows %}<tr>{% for v in row %}<td>{{ v }}</td>{% endfor %}</tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if t.total > t.rows|length %}<small class="text-muted">Showing first {{ t.rows|length }} rows</small>{% endif %}
+</div>
+{% endfor %}

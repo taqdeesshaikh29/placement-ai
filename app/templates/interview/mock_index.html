@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}AI Mock Interview – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <a href="{{ url_for('interview.index') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Interview preparation</a>
+    <h1 class="fw-bold mt-2">AI Mock Interview</h1>
+    {% if ai_on %}
+    <div class="alert alert-info py-2 small"><i class="bi bi-stars"></i> AI feedback is on. Your answers are sent to an external AI service to be assessed.</div>
+    {% else %}
+    <div class="alert alert-warning py-2 small"><strong>Fallback mode.</strong> No AI service is configured, so you will get predefined questions and sample answers with a simple keyword check. Feedback is not AI-generated and is labelled as such.</div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('interview.mock_start') }}" class="card feature-card mb-4"><div class="card-body p-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label fw-medium" for="topic">Topic</label>
+          <select class="form-select" id="topic" name="topic" required>
+            {% for t in topics %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-medium" for="difficulty">Difficulty</label>
+          <select class="form-select" id="difficulty" name="difficulty" required>
+            {% for d in difficulties %}<option value="{{ d }}" {{ 'selected' if d == 'Medium' }}>{{ d }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-medium" for="count">Max questions</label>
+          <select class="form-select" id="count" name="count" required>
+            {% for c in counts %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3"><button type="submit" class="btn btn-primary-custom w-100">Start interview</button></div>
+      </div>
+    </div></form>
+
+    <h2 class="h5 fw-semibold">Your recent interviews</h2>
+    {% for s in recent %}
+    <a class="card feature-card mb-2 text-decoration-none text-reset" href="{{ url_for('interview.mock_summary' if s.completed_at else 'interview.mock_session', session_id=s.id) }}">
+      <div class="card-body p-3 d-flex justify-content-between align-items-center">
+        <div><span class="badge topic-badge">{{ s.topic }}</span> <span class="badge diff-{{ s.difficulty }}">{{ s.difficulty }}</span>
+          <span class="small text-muted ms-2">{{ s.created_at.strftime('%d %b %Y, %H:%M') }}</span></div>
+        <span class="small">{{ 'Completed' if s.completed_at else (s.answers|length ~ '/' ~ s.ids|length ~ ' answered – resume') }}</span>
+      </div>
+    </a>
+    {% else %}
+    <p class="text-muted small">No interviews yet.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

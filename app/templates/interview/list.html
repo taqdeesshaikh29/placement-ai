@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ info.label }} – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <a href="{{ url_for('interview.index') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Interview preparation</a>
+    <h1 class="fw-bold mt-2">{{ info.label }}</h1>
+
+    <form method="get" class="card feature-card mb-4"><div class="card-body p-3">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label class="form-label small fw-medium" for="q">Search</label>
+          <input type="search" class="form-control" id="q" name="q" value="{{ term }}" maxlength="100" placeholder="e.g. index, teamwork">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-medium" for="category">Category</label>
+          <select class="form-select" id="category" name="category">
+            <option value="">All categories</option>
+            {% for c in info.categories %}<option value="{{ c }}" {{ 'selected' if c == category }}>{{ c }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label small fw-medium" for="difficulty">Difficulty</label>
+          <select class="form-select" id="difficulty" name="difficulty">
+            <option value="">All levels</option>
+            {% for d in difficulties %}<option value="{{ d }}" {{ 'selected' if d == difficulty }}>{{ d }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+          <button type="submit" class="btn btn-primary-custom flex-fill">Filter</button>
+          <a href="{{ url_for('interview.question_list', kind=kind) }}" class="btn btn-outline-primary-custom" title="Clear filters"><i class="bi bi-x-lg"></i></a>
+        </div>
+      </div>
+    </div></form>
+
+    <p class="small text-muted">{{ questions|length }} question{{ '' if questions|length == 1 else 's' }}</p>
+
+    {% for q in questions %}
+    <a class="card feature-card mb-3 text-decoration-none text-reset" href="{{ url_for('interview.question', question_id=q.id) }}">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between mb-2">
+          <div>
+            <span class="badge topic-badge">{{ q.category }}</span>
+            <span class="badge diff-{{ q.difficulty }}">{{ q.difficulty }}</span>
+          </div>
+          {% if q.id in answered %}<span class="badge bg-success">Answered</span>{% endif %}
+        </div>
+        <div class="fw-semibold">{{ q.text }}</div>
+      </div>
+    </a>
+    {% else %}
+    <div class="card feature-card"><div class="card-body p-4 text-muted">No questions match your filters. Try a different search or clear the filters.</div></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}SQL Practice Lab – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container">
+    <h1 class="fw-bold">SQL Practice Lab</h1>
+    <p class="text-muted mb-4">Learn SQL by writing queries against sample placement data. Only read-only SELECT queries run here.</p>
+
+    <div class="row g-4 mb-4">
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Questions solved</div>
+        <div class="stat-value">{{ progress.solved }}/{{ progress.total }}</div>
+      </div></div></div>
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Progress</div>
+        <div class="stat-value">{{ progress.percent }}%</div>
+        <div class="progress mt-2" style="height: 6px;"><div class="progress-bar" style="width: {{ progress.percent }}%"></div></div>
+      </div></div></div>
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Answers checked</div>
+        <div class="stat-value">{{ progress.attempts }}</div>
+      </div></div></div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-7">
+        {% for topic, questions in grouped %}
+        <div class="card feature-card mb-3"><div class="card-body p-4">
+          <h5 class="fw-semibold mb-2">{{ topic }}</h5>
+          {% for q in questions %}
+          <a class="q-row" href="{{ url_for('sql_lab.question', qid=q.id) }}">
+            <span>{{ q.id }}. {{ q.title }}</span>
+            {% if q.id in progress.solved_ids %}<span class="badge bg-success">Solved</span>
+            {% else %}<i class="bi bi-chevron-right text-muted"></i>{% endif %}
+          </a>
+          {% endfor %}
+        </div></div>
+        {% endfor %}
+      </div>
+      <div class="col-lg-5">
+        <div class="card feature-card"><div class="card-body p-4">{% include "sql_lab/_tables.html" %}</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

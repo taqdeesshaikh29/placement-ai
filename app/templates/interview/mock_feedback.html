@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Feedback – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <p class="small text-muted mb-1">Question {{ a.position + 1 }} of {{ total }}</p>
+    <div class="card feature-card mb-3"><div class="card-body p-4">
+      <div class="mb-2"><span class="badge topic-badge">{{ a.question.category }}</span> <span class="badge diff-{{ a.question.difficulty }}">{{ a.question.difficulty }}</span></div>
+      <h2 class="h5 fw-bold">{{ a.question.text }}</h2>
+      <div class="small text-muted">Your answer</div>
+      <p class="mb-0" style="white-space: pre-wrap;">{{ a.answer_text }}</p>
+    </div></div>
+    <div class="card feature-card mb-3"><div class="card-body p-4">
+      {% include "interview/_mock_feedback.html" %}
+    </div></div>
+    {% if is_last %}
+    <a href="{{ url_for('interview.mock_summary', session_id=ms.id) }}" class="btn btn-primary-custom">See summary</a>
+    {% else %}
+    <a href="{{ url_for('interview.mock_session', session_id=ms.id) }}" class="btn btn-primary-custom">Next question</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

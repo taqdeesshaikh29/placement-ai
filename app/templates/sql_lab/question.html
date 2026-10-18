@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}SQL Q{{ q.id }} – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container">
+    <a href="{{ url_for('sql_lab.index') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> All questions</a>
+    <div class="row g-4 mt-1">
+      <div class="col-lg-7">
+        <div class="card feature-card mb-3"><div class="card-body p-4">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="badge topic-badge">{{ q.topic }}</span>
+            {% if solved_before %}<span class="badge bg-success">Solved</span>{% endif %}
+          </div>
+          <h2 class="h4 fw-bold">Q{{ q.id }}. {{ q.title }}</h2>
+          <p class="mb-2">{{ q.prompt }}</p>
+          <details><summary class="small text-muted">Need a hint?</summary><p class="small mt-2 mb-0">{{ q.hint }}</p></details>
+        </div></div>
+
+        <form method="post" id="sqlForm" class="mb-3">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label class="form-label fw-medium" for="query">Your query</label>
+          <textarea class="form-control sql-editor mb-2" id="query" name="query" rows="6" maxlength="{{ max_len }}"
+                    spellcheck="false" placeholder="SELECT ... FROM ...">{{ query }}</textarea>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <button type="submit" name="action" value="run" class="btn btn-outline-primary-custom"><i class="bi bi-play-fill"></i> Run Query</button>
+            <button type="submit" name="action" value="check" class="btn btn-primary-custom"><i class="bi bi-check2-circle"></i> Check Answer</button>
+            <small class="text-muted ms-auto">Ctrl+Enter to run</small>
+          </div>
+        </form>
+
+        {% if error %}
+        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill me-1"></i>{{ error }}</div>
+        {% endif %}
+
+        {% if feedback %}
+        <div class="alert {{ 'alert-success' if correct else 'alert-warning' }}">
+          <i class="bi {{ 'bi-check-circle-fill' if correct else 'bi-info-circle-fill' }} me-1"></i>{{ feedback }}
+        </div>
+        {% endif %}
+
+        {% if result %}
+        <div class="card feature-card mb-3"><div class="card-body p-4">
+          <h6 class="fw-semibold">Result <small class="text-muted fw-normal">({{ [result.rows|length, display_rows]|min }} row{{ '' if result.rows|length == 1 else 's' }})</small></h6>
+          <div class="sql-results">
+            <table class="table table-sm table-striped">
+              <thead><tr>{% for c in result.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+              <tbody>
+                {% for row in result.rows[:display_rows] %}
+                <tr>{% for v in row %}<td>{% if v is none %}<span class="sql-null">NULL</span>{% else %}{{ v }}{% endif %}</td>{% endfor %}</tr>
+                {% else %}
+                <tr><td colspan="{{ result.columns|length }}" class="text-muted">No rows returned.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% if result.rows|length > display_rows or result.truncated %}<small class="text-muted">Only the first {{ display_rows }} rows are shown.</small>{% endif %}
+        </div></div>
+        {% endif %}
+
+        {% if correct %}
+        <div class="card feature-card"><div class="card-body p-4">
+          <h6 class="fw-semibold">Explanation</h6>
+          <p class="explanation mb-2">{{ q.explanation }}</p>
+          <p class="small text-muted mb-1">One possible solution:</p>
+          <pre class="sql-editor p-3 mb-3"><code>{{ q.answer_sql }}</code></pre>
+          {% if next_q %}<a class="btn btn-primary-custom" href="{{ url_for('sql_lab.question', qid=next_q.id) }}">Next question</a>{% endif %}
+        </div></div>
+        {% endif %}
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card feature-card"><div class="card-body p-4">{% include "sql_lab/_tables.html" %}</div></div>
+        <p class="small text-muted mt-2">Your score: {{ progress.solved }}/{{ progress.total }} questions solved.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sql_lab.js') }}"></script>
+{% endblock %}

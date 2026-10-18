@@ -1,0 +1,7 @@
+{% macro field(f, autocomplete=None) %}
+<div class="mb-3">
+  {{ f.label(class="form-label fw-medium") }}
+  {{ f(class=("form-select" if f.type == "SelectField" else "form-control") + (" is-invalid" if f.errors else ""), autocomplete=autocomplete) }}
+  {% for error in f.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+</div>
+{% endmacro %}

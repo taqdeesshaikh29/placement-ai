@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}My Progress – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+      <div>
+        <h1 class="fw-bold mb-1">My Progress</h1>
+        <p class="text-muted mb-0">Everything here comes from your own saved attempts.</p>
+      </div>
+      <a href="{{ url_for('progress.review') }}" class="btn btn-primary-custom"><i class="bi bi-arrow-repeat"></i> Review incorrect answers</a>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-sm-6 col-lg-3"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Questions attempted</div><div class="stat-value">{{ attempted }}</div></div></div></div>
+      <div class="col-sm-6 col-lg-3"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Overall accuracy</div><div class="stat-value">{% if attempted %}{{ accuracy }}%{% else %}–{% endif %}</div></div></div></div>
+      <div class="col-sm-6 col-lg-3"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Saved interview answers</div><div class="stat-value">{{ interview.saved_count }}</div></div></div></div>
+      <div class="col-sm-6 col-lg-3"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Mock interviews</div><div class="stat-value">{{ interview.mock_count }}</div></div></div></div>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-lg-6"><div class="card feature-card h-100"><div class="card-body p-4">
+        <h5 class="fw-semibold mb-3">Subject-wise accuracy</h5>
+        {% if subjects %}<div class="chart-wrap"><canvas id="subjectChart" data-points='{{ subjects|tojson|forceescape }}'></canvas></div>
+        {% else %}<p class="text-muted mb-0">No data yet. Take a quiz or try a Python or SQL question.</p>{% endif %}
+      </div></div></div>
+      <div class="col-lg-6"><div class="card feature-card h-100"><div class="card-body p-4">
+        <h5 class="fw-semibold mb-3">Quiz scores over time</h5>
+        {% if trend %}<div class="chart-wrap"><canvas id="trendChart" data-points='{{ trend|tojson|forceescape }}'></canvas></div>
+        <small class="text-muted">Your last {{ trend|length }} aptitude quiz{{ '' if trend|length == 1 else 'zes' }}.</small>
+        {% else %}<p class="text-muted mb-0">Complete an aptitude quiz to see your scores over time.</p>{% endif %}
+      </div></div></div>
+    </div>
+
+    <div class="card feature-card mb-4"><div class="card-body p-4">
+      <h5 class="fw-semibold mb-3">Practice history</h5>
+      {% if history %}
+      <div class="table-responsive"><table class="table align-middle mb-0">
+        <thead><tr><th>Date</th><th>Activity</th><th>Item</th><th>Result</th></tr></thead>
+        <tbody>
+        {% for h in history %}
+        <tr>
+          <td class="text-nowrap small text-muted">{{ h.when.strftime('%d %b %Y, %H:%M') }}</td>
+          <td>{{ h.kind }}</td>
+          <td>{% if h.endpoint %}<a href="{{ url_for(h.endpoint, **h.args) }}">{{ h.title }}</a>{% else %}{{ h.title }}{% endif %}</td>
+          <td><span class="badge {{ 'bg-success' if h.ok else 'bg-danger' }}">{{ h.result }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      {% else %}<p class="text-muted mb-0">No practice yet.</p>{% endif %}
+    </div></div>
+
+    <div class="row g-4">
+      <div class="col-lg-6"><div class="card feature-card h-100"><div class="card-body p-4">
+        <h5 class="fw-semibold mb-3">Interview preparation</h5>
+        {% for item in interview.saved %}
+        <a class="d-block text-decoration-none text-reset border-bottom py-2" href="{{ url_for('interview.question', question_id=item.question.id) }}">
+          <span class="badge topic-badge">{{ item.question.category }}</span>
+          <span class="small text-muted ms-1">{{ item.response.updated_at.strftime('%d %b %Y') }}</span>
+          <div class="small">{{ item.question.text }}</div>
+        </a>
+        {% else %}<p class="text-muted mb-0">You haven't saved any interview answers yet.</p>{% endfor %}
+      </div></div></div>
+      <div class="col-lg-6"><div class="card feature-card h-100"><div class="card-body p-4">
+        <h5 class="fw-semibold mb-3">Mock interviews</h5>
+        {% for m in interview.mock_sessions %}
+        <a class="d-block text-decoration-none text-reset border-bottom py-2"
+           href="{{ url_for('interview.mock_summary' if m.session.completed_at else 'interview.mock_session', session_id=m.session.id) }}">
+          <span class="badge topic-badge">{{ m.session.topic }}</span> <span class="badge diff-{{ m.session.difficulty }}">{{ m.session.difficulty }}</span>
+          <span class="small text-muted ms-1">{{ m.session.created_at.strftime('%d %b %Y') }}</span>
+          <div class="small">{{ m.answered }}/{{ m.total }} answered ·
+            {% if m.ai_count %}AI average {{ m.avg_score }}/10 ({{ m.ai_count }} AI-assessed){% else %}no AI scores (fallback mode){% endif %}</div>
+        </a>
+        {% else %}<p class="text-muted mb-0">No mock interviews yet.</p>{% endfor %}
+      </div></div></div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if subjects or trend %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/progress.js') }}"></script>
+{% endif %}
+{% endblock %}

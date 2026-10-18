@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Quiz Result – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <h1 class="fw-bold">Your result</h1>
+    <p class="text-muted mb-4">{{ attempt.category }} · {{ attempt.difficulty }}</p>
+
+    <div class="row g-4 mb-4">
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Score</div>
+        <div class="stat-value">{{ result.correct_answers }}/{{ result.total_questions }}</div>
+      </div></div></div>
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-value">{{ result.accuracy }}%</div>
+      </div></div></div>
+      <div class="col-sm-4"><div class="card feature-card h-100"><div class="card-body p-4">
+        <div class="stat-label">Time taken</div>
+        <div class="stat-value">{{ '%d:%02d' % (attempt.time_taken // 60, attempt.time_taken % 60) }}</div>
+        {% if unanswered %}<small class="text-muted">{{ unanswered }} unanswered</small>{% endif %}
+      </div></div></div>
+    </div>
+
+    <h2 class="h4 fw-semibold mb-3">Review</h2>
+    {% for a in attempt.answers %}
+    {% set q = a.question %}
+    <div class="card feature-card mb-3">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="fw-semibold">Question {{ loop.index }}</span>
+          {% if a.is_correct %}<span class="badge bg-success">Correct</span>
+          {% elif a.selected_option is none %}<span class="badge bg-secondary">Unanswered</span>
+          {% else %}<span class="badge bg-danger">Incorrect</span>{% endif %}
+        </div>
+        <p class="mb-3">{{ q.text }}</p>
+        {% for opt in q.options %}
+        <div class="review-option {{ 'is-correct' if loop.index == q.correct_option }} {{ 'is-wrong' if loop.index == a.selected_option and not a.is_correct }}">
+          {{ opt }}
+          {% if loop.index == q.correct_option %}<i class="bi bi-check-circle-fill float-end"></i>{% endif %}
+          {% if loop.index == a.selected_option and not a.is_correct %}<i class="bi bi-x-circle-fill float-end"></i>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="explanation mt-3"><strong>Explanation:</strong> {{ q.explanation }}</div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="d-flex gap-2">
+      <a href="{{ url_for('aptitude.index') }}" class="btn btn-primary-custom">Practice again</a>
+      <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary-custom">Back to dashboard</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

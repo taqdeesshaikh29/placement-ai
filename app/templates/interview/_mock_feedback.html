@@ -1,0 +1,36 @@
+{# Expects: a (MockAnswer), fb (decoded feedback), reason_text (optional) #}
+{% if a.source == 'ai' %}
+<span class="badge bg-primary mb-3"><i class="bi bi-stars"></i> AI-generated feedback</span>
+<div class="row g-2 mb-3">
+  {% for m in ['correctness', 'clarity', 'completeness'] %}
+  <div class="col-md-4"><div class="border rounded p-3 h-100">
+    <div class="small text-muted text-capitalize">{{ m }}</div>
+    <div class="h4 fw-bold mb-1">{{ fb.scores[m] }}<span class="small text-muted">/10</span></div>
+    <div class="small">{{ fb.comments[m] }}</div>
+  </div></div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-warning py-2 small mb-3">
+  <strong><i class="bi bi-info-circle"></i> Fallback mode – this feedback is NOT AI-generated.</strong>
+  {% if reason_text %}{{ reason_text }}{% endif %}
+  It is a keyword check against the question's key concepts, with no scoring.
+</div>
+{% if fb.covered %}
+<div class="small text-muted mb-1">Key concepts your answer seems to mention</div>
+<div class="mb-3">{% for c in fb.covered %}<span class="badge bg-success me-1 mb-1">{{ c }}</span>{% endfor %}</div>
+{% endif %}
+{% endif %}
+
+{% if fb.improvements %}
+<div class="fw-semibold mb-1">Areas to improve</div>
+<ul>{% for i in fb.improvements %}<li>{{ i }}</li>{% endfor %}</ul>
+{% endif %}
+
+<div class="fw-semibold mb-1">Sample answer{% if a.source == 'fallback' %} <span class="small text-muted fw-normal">(from the question bank)</span>{% endif %}</div>
+<p class="explanation">{{ fb.sample_answer }}</p>
+
+{% if fb.follow_up %}
+<div class="fw-semibold mb-1">Optional follow-up question</div>
+<p class="mb-0">{{ fb.follow_up }}</p>
+{% endif %}

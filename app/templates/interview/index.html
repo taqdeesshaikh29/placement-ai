@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Interview Preparation – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container">
+    <h1 class="fw-bold">Interview Preparation</h1>
+    <p class="text-muted mb-4">Read common questions, study the key concepts and sample answers, then write and save your own responses.</p>
+    <div class="row g-4">
+      {% for c in cards %}
+      <div class="col-md-6">
+        <div class="card feature-card h-100"><div class="card-body p-4 d-flex flex-column">
+          <div class="feature-icon mb-3"><i class="bi {{ c.icon }}"></i></div>
+          <h4 class="fw-semibold">{{ c.label }}</h4>
+          <p class="text-muted">{{ c.text }}</p>
+          <p class="small mb-3"><strong>{{ c.answered }}</strong> of {{ c.total }} questions answered</p>
+          <a href="{{ url_for('interview.question_list', kind=c.key) }}" class="btn btn-primary-custom mt-auto align-self-start">Browse questions</a>
+        </div></div>
+      </div>
+      {% endfor %}
+      <div class="col-12">
+        <div class="card feature-card"><div class="card-body p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+          <div><h4 class="fw-semibold mb-1"><i class="bi bi-stars"></i> AI Mock Interview</h4>
+            <p class="text-muted mb-0">Pick a topic and difficulty, answer one question at a time and get feedback with a sample answer.</p></div>
+          <a href="{{ url_for('interview.mock_index') }}" class="btn btn-primary-custom">Start mock interview</a>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

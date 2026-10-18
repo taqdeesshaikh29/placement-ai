@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Review Incorrect Answers – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <a href="{{ url_for('progress.index') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> My progress</a>
+    <h1 class="fw-bold mt-2">Review incorrect answers</h1>
+    <form method="get" class="d-flex gap-2 mb-4">
+      <select name="subject" class="form-select w-auto" aria-label="Subject">
+        <option value="">All subjects</option>
+        {% for s in subjects %}<option value="{{ s }}" {{ 'selected' if s == subject }}>{{ s }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-primary-custom" type="submit">Filter</button>
+    </form>
+
+    {% for i in items %}
+    <div class="card feature-card mb-3"><div class="card-body p-4">
+      <div class="d-flex justify-content-between mb-2">
+        <span><span class="badge topic-badge">{{ i.subject }}</span> <span class="small text-muted ms-1">{{ i.when.strftime('%d %b %Y') }}</span></span>
+        {% if i.kind == 'aptitude' %}<a class="small" href="{{ url_for('aptitude.result', attempt_id=i.attempt_id) }}">Full quiz result</a>
+        {% elif i.solved_since %}<span class="badge bg-success">Solved since</span>
+        {% else %}<a class="small" href="{{ url_for(i.kind ~ '_lab.question', qid=i.qid) }}">Try again</a>{% endif %}
+      </div>
+      {% if i.kind == 'aptitude' %}
+        <p class="mb-3">{{ i.question.text }}</p>
+        {% for opt in i.question.options %}
+        <div class="review-option {{ 'is-correct' if loop.index == i.question.correct_option }} {{ 'is-wrong' if loop.index == i.selected }}">
+          {{ opt }}{% if loop.index == i.question.correct_option %}<i class="bi bi-check-circle-fill float-end"></i>{% endif %}
+        </div>
+        {% endfor %}
+        {% if i.selected is none %}<small class="text-muted">You left this unanswered.</small>{% endif %}
+        <p class="explanation mt-3 mb-0">{{ i.question.explanation }}</p>
+      {% else %}
+        <div class="fw-semibold mb-2">{{ i.title }}</div>
+        <div class="small text-muted">Your answer</div>
+        <pre class="mb-0"><code>{{ i.answer }}</code></pre>
+      {% endif %}
+    </div></div>
+    {% else %}
+    <div class="card feature-card"><div class="card-body p-4 text-muted">Nothing to review{% if subject %} for {{ subject }}{% endif %}. Incorrect answers will appear here.</div></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

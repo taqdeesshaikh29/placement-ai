@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "partials/form_field.html" import field %}
+{% block title %}Register – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="auth-page d-flex align-items-center">
+  <div class="container">
+    <div class="auth-card mx-auto">
+      <h2 class="fw-bold mb-1">Create your account</h2>
+      <p class="text-muted mb-4">Start your placement preparation today.</p>
+      <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ field(form.name, "name") }}
+        {{ field(form.email, "email") }}
+        {{ field(form.password, "new-password") }}
+        {{ field(form.confirm_password, "new-password") }}
+        {{ form.submit(class="btn btn-primary-custom w-100 py-2") }}
+      </form>
+      <p class="text-center text-muted mt-4 mb-0">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+    </div>
+  </div>
+</section>
+{% endblock %}

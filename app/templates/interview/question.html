@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ q.category }} Question – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <a href="{{ url_for('interview.question_list', kind=q.kind) }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> {{ kind_info.label }}</a>
+
+    <div class="card feature-card my-3"><div class="card-body p-4">
+      <div class="mb-2">
+        <span class="badge topic-badge">{{ q.category }}</span>
+        <span class="badge diff-{{ q.difficulty }}">{{ q.difficulty }}</span>
+      </div>
+      <h2 class="h4 fw-bold mb-3">{{ q.text }}</h2>
+      <div class="small text-muted mb-1">Key concepts to cover</div>
+      <div>{% for c in q.concepts %}<span class="badge topic-badge me-1 mb-1">{{ c }}</span>{% endfor %}</div>
+    </div></div>
+
+    <form method="post" class="card feature-card mb-3" id="responseForm"><div class="card-body p-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="form-label fw-medium" for="response">Your answer</label>
+      <textarea class="form-control{{ ' is-invalid' if error }}" id="response" name="response" rows="8" maxlength="{{ max_len }}"
+                placeholder="Write your answer in your own words...">{{ text }}</textarea>
+      {% if error %}<div class="invalid-feedback">{{ error }}</div>{% endif %}
+      <div class="d-flex flex-wrap justify-content-between align-items-center mt-3 gap-2">
+        <small class="text-muted"><span id="charCount">{{ text|length }}</span>/{{ max_len }} characters
+          {% if saved %}· last saved {{ saved.updated_at.strftime('%d %b %Y, %H:%M') }}{% endif %}</small>
+        <button type="submit" class="btn btn-primary-custom" id="saveBtn">{{ 'Update answer' if saved else 'Save answer' }}</button>
+      </div>
+    </div></form>
+
+    {% if saved %}
+    <form method="post" action="{{ url_for('interview.delete_response', question_id=q.id) }}" class="mb-3"
+          onsubmit="return confirm('Delete your saved answer?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Delete my answer</button>
+    </form>
+    {% endif %}
+
+    <div class="card feature-card"><div class="card-body p-4">
+      <details>
+        <summary class="fw-semibold">Show sample answer</summary>
+        <p class="explanation mt-3 mb-0">{{ q.sample_answer }}</p>
+      </details>
+      <p class="small text-muted mt-3 mb-0">This is one example. Use your own words and your own experience.</p>
+    </div></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const box = document.getElementById("response");
+  const count = document.getElementById("charCount");
+  box.addEventListener("input", () => { count.textContent = box.value.length; });
+  const form = document.getElementById("responseForm");
+  form.addEventListener("submit", (e) => {
+    if (form.dataset.busy) { e.preventDefault(); return; }
+    form.dataset.busy = "1";
+    document.getElementById("saveBtn").disabled = true;
+  });
+</script>
+{% endblock %}

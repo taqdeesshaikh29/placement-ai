@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Python Q{{ q.id }} – {{ config.APP_NAME }}{% endblock %}
+{% block content %}
+<section class="section dashboard">
+  <div class="container quiz-container">
+    <a href="{{ url_for('python_lab.index') }}" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> All questions</a>
+
+    <div class="card feature-card my-3"><div class="card-body p-4">
+      <div class="d-flex justify-content-between mb-2">
+        <div>
+          <span class="badge topic-badge">{{ q.topic }}</span>
+          <span class="badge diff-{{ q.difficulty }}">{{ q.difficulty }} · {{ points[q.difficulty] }} pts</span>
+        </div>
+        {% if solved_before %}<span class="badge bg-success">Solved</span>{% endif %}
+      </div>
+      <h2 class="h4 fw-bold">{{ q.title }}</h2>
+      <p>{{ q.description }}</p>
+
+      {% if q.code %}<pre class="code-block mb-3"><code>{{ q.code }}</code></pre>{% endif %}
+      {% if q.type == 'fill' %}<p class="small text-muted">The program should print: <code>{{ q.expected_output }}</code></p>{% endif %}
+
+      <details class="mb-2">
+        <summary class="small fw-semibold">Sample input / output</summary>
+        <div class="mt-2">
+          <div class="small text-muted">Example code</div>
+          <pre class="code-block mb-2"><code>{{ q.example_code }}</code></pre>
+          <div class="small text-muted">Example output</div>
+          <pre class="code-block mb-0"><code>{{ q.example_output }}</code></pre>
+        </div>
+      </details>
+      <details><summary class="small fw-semibold">Need a hint?</summary><p class="small mt-2 mb-0">{{ q.hint }}</p></details>
+    </div></div>
+
+    <form method="post" id="pyForm" class="card feature-card mb-3"><div class="card-body p-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if q.type == 'choice' %}
+        <div class="fw-medium mb-2">Choose one answer</div>
+        {% for opt in q.options %}
+        <div class="form-check option-row">
+          <input class="form-check-input" type="radio" name="answer" id="opt{{ loop.index0 }}" value="{{ loop.index0 }}" {{ 'checked' if answer == loop.index0|string }}>
+          <label class="form-check-label" for="opt{{ loop.index0 }}">{{ opt }}</label>
+        </div>
+        {% endfor %}
+      {% elif q.type == 'fill' %}
+        <label class="form-label fw-medium" for="answer">What goes in the blank (___)?</label>
+        <input type="text" class="form-control sql-editor" id="answer" name="answer" maxlength="{{ max_len }}" autocomplete="off" spellcheck="false" value="{{ answer }}" style="min-height: 0;">
+      {% else %}
+        <label class="form-label fw-medium" for="answer">What is printed? (one line per printed line)</label>
+        <textarea class="form-control sql-editor" id="answer" name="answer" rows="3" maxlength="{{ max_len }}" spellcheck="false">{{ answer }}</textarea>
+      {% endif %}
+      <button type="submit" class="btn btn-primary-custom mt-3" id="pySubmit">Submit answer</button>
+    </div></form>
+
+    {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+
+    {% if submitted %}
+    <div class="alert {{ 'alert-success' if correct else 'alert-warning' }}">
+      {% if correct %}<i class="bi bi-check-circle-fill me-1"></i>Correct! +{{ points[q.difficulty] }} points the first time you solve it.
+      {% else %}<i class="bi bi-info-circle-fill me-1"></i>Not quite. Read the explanation below, then try again.{% endif %}
+    </div>
+    {% endif %}
+
+    {% if reveal %}
+    <div class="card feature-card mb-3"><div class="card-body p-4">
+      <h6 class="fw-semibold">Solution</h6>
+      <pre class="code-block mb-3"><code>{{ solution }}</code></pre>
+      <h6 class="fw-semibold">Explanation</h6>
+      <p class="explanation mb-3">{{ q.explanation }}</p>
+      {% if next_q %}<a class="btn btn-outline-primary-custom" href="{{ url_for('python_lab.question', qid=next_q.id) }}">Next question</a>{% endif %}
+    </div></div>
+    {% endif %}
+    <p class="small text-muted">Your score: {{ progress.solved }}/{{ progress.total }} solved · {{ progress.points }} points</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Prevent double submits (each submission is saved as an attempt)
+  const form = document.getElementById("pyForm");
+  form.addEventListener("submit", (e) => {
+    if (form.dataset.busy) { e.preventDefault(); return; }
+    form.dataset.busy = "1";
+    document.getElementById("pySubmit").disabled = true;
+  });
+</script>
+{% endblock %}
